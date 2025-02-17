@@ -3,7 +3,7 @@
     v-if="data.type === 'circle'"
     class="custom-node circle-node"
     :class="{ selected: selected }"
-    :style="{ backgroundColor: data.backgroundColor || '#ffffff' }"
+    :style="{ backgroundColor: data.backgroundColor || '#2196F3' }"
   >
     <!-- Contenido del nodo circular -->
     <div class="circle-label">
@@ -99,34 +99,38 @@ export default {
   }
 }
 
+/* Nodo circular */
 .circle-node {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%; /* Nodo en forma de círculo */
-  border: 1px solid #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: 12px;
-  font-weight: bold;
-  color: #333;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100px; /* El ancho del círculo */
+  height: 100px; /* El alto del círculo (debe ser igual que el ancho) */
+  border-radius: 50%; /* Hacerlo circular */
+  display: flex; /* Para centrar contenido */
+  align-items: center; /* Centrado vertical */
+  justify-content: center; /* Centrado horizontal */
+  text-align: center; /* Asegurar texto centrado */
+  font-size: 14px; /* Tamaño del texto */
+  font-weight: bold; /* Texto en negrita */
+  color: white; /* Texto blanco */
+  background-color: #2196F3; /* Fondo azul */
+  border: 3px solid #1565C0; /* Borde azul oscuro */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
   position: relative;
 
   &.selected {
-    border: 2px solid #2196F3;
+    border: 3px solid #0D47A1; /* Borde más oscuro cuando está seleccionado */
   }
 }
 
+/* Estilo del texto interno del nodo circular */
 .circle-label {
   text-align: center;
   padding: 8px;
   font-size: 14px;
   font-weight: bold;
+  user-select: none; /* Previene selección del texto */
 }
 
+/* Estilo de los nodos rectangulares */
 .node-header {
   padding: 8px;
   border-top-left-radius: 8px;
