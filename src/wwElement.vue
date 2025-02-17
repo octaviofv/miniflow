@@ -16,6 +16,14 @@
       @paneClick="onPaneClick"
     >
       <template #node-custom="nodeProps">
+        <CircleNode 
+v-if="['event-start', 'event-end'].includes(nodeProps?.data?.type)"
+:type="nodeProps?.data?.type"
+:label="nodeProps?.data?.label"
+:icon="nodeProps?.data?.icon"
+:selected="nodeProps?.selected"
+:backgroundColor="nodeProps?.data?.backgroundColor"
+/>
         <CustomNode v-bind="nodeProps" />
       </template>
 
@@ -50,6 +58,7 @@ import '@vue-flow/core/dist/theme-default.css';
 import '@vue-flow/controls/dist/style.css';
 import '@vue-flow/minimap/dist/style.css';
 import CustomNode from './components/CustomNode.vue';
+import CircleNode from './components/CircleNode.vue';  
 
 export default {
   name: 'FlowChart',
@@ -60,6 +69,7 @@ export default {
     MiniMap,
     Panel,
     CustomNode,
+    CircleNode
   },
   props: {
     content: {
