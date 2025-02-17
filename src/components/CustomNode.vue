@@ -1,154 +1,285 @@
 <template>
-  <div
-    v-if="data.type === 'circle'"
-    class="custom-node circle-node"
-    :class="{ selected: selected }"
-    :style="{ backgroundColor: data.backgroundColor || '#2196F3' }"
-  >
-    <!-- Contenido del nodo circular -->
-    <div class="circle-label">
-      {{ data.label || 'Start/End' }}
-    </div>
-    <div class="node-handles">
-      <Handle
-        v-for="handle in handles"
-        :key="handle.id"
-        :id="handle.id"
-        :type="handle.type"
-        :position="handle.position"
-      />
-    </div>
-  </div>
-  <div 
-    v-else
-    class="custom-node" 
-    :class="{ selected: selected }"
-    :style="{ backgroundColor: data.backgroundColor || '#ffffff' }"
-  >
-    <!-- Contenido del nodo estándar (rectangular) -->
-    <div class="node-header" :style="{ backgroundColor: data.headerColor || '#4CAF50' }">
-      <span class="node-title">{{ data.label || 'Node' }}</span>
-    </div>
-    <div class="node-content">
-      {{ data.content || '' }}
-    </div>
-    <div class="node-handles">
-      <Handle
-        v-for="handle in handles"
-        :key="handle.id"
-        :id="handle.id"
-        :type="handle.type"
-        :position="handle.position"
-      />
-    </div>
+  <div class="flowchart-container" :style="containerStyle">
+    <VueFlow
+      v-if="initialized"
+      v-model="elements"
+      :default-zoom="defaultZoom"
+      :min-zoom="minZoom"
+      :max-zoom="maxZoom"
+      :fit-view-on-init="true"
+      :nodes-draggable="!isEditing"
+      :nodes-connectable="!isEditing"
+      :elements-selectable="!isEditing"
+      class="flowchart"
+      @nodeClick="onNodeClick"
+      @connect="onConnect"
+      @paneClick="onPaneClick"
+    >
+      <template #node-custom="nodeProps">
+        <CustomNode v-bind="nodeProps" />
+      </template>
+
+      <Background :pattern-color="backgroundColor" :gap="backgroundGap" />
+      <Controls />
+      <MiniMap v-if="showMinimap" />
+
+      <Panel position="top-right" v-if="!isEditing">
+        <button class="control-button" @click="addNode">
+          Add Node
+        </button>
+        <button class="control-button" @click="deleteSelected">
+          Delete Selected
+        </button>
+      </Panel>
+    </VueFlow>
   </div>
 </template>
 
 <script>
-import { Handle } from '@vue-flow/core';
+import { ref, computed, watch, onMounted } from 'vue';
+import { 
+  VueFlow, 
+  useVueFlow,
+  Background, 
+  Controls, 
+  MiniMap, 
+  Panel 
+} from '@vue-flow/core';
+import '@vue-flow/core/dist/style.css';
+import '@vue-flow/core/dist/theme-default.css';
+import '@vue-flow/controls/dist/style.css';
+import '@vue-flow/minimap/dist/style.css';
+import CustomNode from './components/CustomNode.vue';
 
 export default {
-  name: 'CustomNode',
+  name: 'FlowChart',
   components: {
-    Handle,
+    VueFlow,
+    Background,
+    Controls,
+    MiniMap,
+    Panel,
+    CustomNode,
   },
   props: {
-    id: {
-      type: String,
-      required: true,
-    },
-    data: {
+    content: {
       type: Object,
       required: true,
     },
-    selected: {
-      type: Boolean,
-      default: false,
+    uid: {
+      type: String,
+      required: true,
     },
+    /* wwEditor:start */
+    wwEditorState: { type: Object, required: true },
+    /* wwEditor:end */
   },
-  setup(props) {
-    // Define diferentes arreglos de handles dependiendo del tipo de nodo
-    const handles = props.data.type === 'circle'
-      ? [
-          { id: 'bottom', type: 'source', position: 'bottom' }, // Solo salida en el nodo circular
-        ]
-      : [
-          { id: 'top', type: 'source', position: 'top' },
-          { id: 'bottom', type: 'source', position: 'bottom' },
-        ];
+  emits: ['trigger-event'],
+  setup(props, { emit }) {
+    const initialized = ref(false);
+    const elements = ref([]);
+    const selectedNode = ref(null);
+
+    // Editor state
+    const isEditing = computed(() => {
+      /* wwEditor:start */
+      return props.wwEditorState?.isEditing;
+      /* wwEditor:end */
+      return false;
+    });
+
+    // Initialize VueFlow
+    const { findNode, addNodes, addEdges, removeNodes } = useVueFlow({
+      defaultEdgeOptions: {
+        type: 'smoothstep',
+        animated: true,
+      },
+    });
+
+    // Computed properties
+    const containerStyle = computed(() => ({
+      height: props.content?.height || '500px',
+      backgroundColor: props.content?.backgroundColor || '#f5f5f5',
+    }));
+
+    const defaultZoom = computed(() => props.content?.defaultZoom || 1);
+    const minZoom = computed(() => props.content?.minZoom || 0.1);
+    const maxZoom = computed(() => props.content?.maxZoom || 4);
+    const backgroundGap = computed(() => props.content?.backgroundGap || 20);
+    const showMinimap = computed(() => props.content?.showMinimap ?? true);
+    const backgroundColor = computed(() => props.content?.backgroundColor || '#f5f5f5');
+
+    // Initialize flow data
+    onMounted(() => {
+      try {
+        if (props.content?.flowData) {
+          const parsedData = typeof props.content.flowData === 'string' 
+            ? JSON.parse(props.content.flowData) 
+            : props.content.flowData;
+          
+          elements.value = [
+            ...(parsedData.nodes || []),
+            ...(parsedData.edges || [])
+          ];
+        }
+        initialized.value = true;
+      } catch (error) {
+        console.error('Error initializing flow data:', error);
+        elements.value = [];
+        initialized.value = true;
+      }
+    });
+
+    // Watch for flow data changes
+    watch(() => props.content?.flowData, (newData) => {
+      if (newData && initialized.value) {
+        try {
+          const parsedData = typeof newData === 'string' ? JSON.parse(newData) : newData;
+          elements.value = [
+            ...(parsedData.nodes || []),
+            ...(parsedData.edges || [])
+          ];
+        } catch (error) {
+          console.error('Invalid flow data:', error);
+        }
+      }
+    });
+
+    // Methods
+    const generateId = () => `node_${Date.now()}`;
+
+    const addNode = () => {
+      const newNode = {
+        id: generateId(),
+        type: 'custom',
+        position: { x: 100, y: 100 },
+        data: {
+          label: 'New Node',
+          content: 'Node content',
+          backgroundColor: '#ffffff',
+          headerColor: '#4CAF50',
+        },
+      };
+
+      addNodes([newNode]);
+      emit('trigger-event', { name: 'nodeAdded', event: { node: newNode } });
+    };
+
+    const onNodeClick = (event, node) => {
+      selectedNode.value = node;
+      console.log('Nodo seleccionado:', node); // Verifica que el nodo seleccionado se registre correctamente
+      emit('trigger-event', { name: 'nodeSelected', event: { node } });
+    };
+
+    const onConnect = (connection) => {
+      if (connection?.source && connection?.target) {
+        const newEdge = {
+          id: `edge-${connection.source}-${connection.target}`,
+          ...connection,
+          type: 'smoothstep',
+          animated: true,
+        };
+        
+        addEdges([newEdge]);
+        emit('trigger-event', { name: 'connectionCreated', event: { connection: newEdge } });
+      }
+    };
+
+    const onPaneClick = () => {
+      selectedNode.value = null;
+      emit('trigger-event', { name: 'selectionCleared' });
+    };
+
+    const deleteSelected = () => {
+      if (selectedNode.value) {
+        console.log('Intentando eliminar nodo:', selectedNode.value.id);
+
+        // Eliminar el nodo seleccionado por su ID
+        removeNodes([selectedNode.value.id]);
+
+        console.log('Nodo eliminado con éxito.');
+        selectedNode.value = null;
+
+        // Emitir el evento indicando que el nodo fue eliminado
+        emit('trigger-event', { name: 'nodeDeleted' });
+      } else {
+        console.warn('No hay un nodo seleccionado para eliminar.');
+      }
+    };
+
+    const updateNodeData = (nodeId, data) => {
+      const node = findNode(nodeId);
+      if (node) {
+        node.data = { ...node.data, ...data };
+        emit('trigger-event', { name: 'nodeUpdated', event: { node } });
+      }
+    };
 
     return {
-      handles,
+      elements,
+      initialized,
+      isEditing,
+      containerStyle,
+      defaultZoom,
+      minZoom,
+      maxZoom,
+      backgroundGap,
+      showMinimap,
+      backgroundColor,
+      addNode,
+      onNodeClick,
+      onConnect,
+      onPaneClick,
+      deleteSelected,
+      updateNodeData,
     };
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.custom-node {
-  border-radius: 8px;
+.flowchart-container {
+  width: 100%;
+  position: relative;
   border: 1px solid #ddd;
-  min-width: 150px;
-  min-height: 80px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  background-color: white;
-  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
 
-  &.selected {
-    border: 2px solid #2196F3;
+  :deep(.vue-flow) {
+    width: 100%;
+    height: 100%;
+  }
+
+  :deep(.vue-flow__node) {
+    width: auto;
+    height: auto;
+  }
+
+  :deep(.vue-flow__handle) {
+    width: 8px;
+    height: 8px;
+    background: #2196F3;
+    border: 2px solid white;
+  }
+
+  :deep(.vue-flow__edge-path) {
+    stroke: #2196F3;
+    stroke-width: 2;
   }
 }
 
-/* Nodo circular */
-.circle-node {
-  width: 100px; /* El ancho del círculo */
-  height: 100px; /* El alto del círculo (debe ser igual que el ancho) */
-  border-radius: 50%; /* Hacerlo circular */
-  display: flex; /* Para centrar contenido */
-  align-items: center; /* Centrado vertical */
-  justify-content: center; /* Centrado horizontal */
-  text-align: center; /* Asegurar texto centrado */
-  font-size: 14px; /* Tamaño del texto */
-  font-weight: bold; /* Texto en negrita */
-  color: white; /* Texto blanco */
-  background-color: #2196F3; /* Fondo azul */
-  border: 3px solid #1565C0; /* Borde azul oscuro */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
-  position: relative;
-
-  &.selected {
-    border: 3px solid #0D47A1; /* Borde más oscuro cuando está seleccionado */
-  }
-}
-
-/* Estilo del texto interno del nodo circular */
-.circle-label {
-  text-align: center;
-  padding: 8px;
-  font-size: 14px;
-  font-weight: bold;
-  user-select: none; /* Previene selección del texto */
-}
-
-/* Estilo de los nodos rectangulares */
-.node-header {
-  padding: 8px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+.control-button {
+  margin: 4px;
+  padding: 8px 16px;
+  background-color: #2196F3;
   color: white;
-}
-
-.node-title {
-  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
   font-size: 14px;
-}
 
-.node-content {
-  padding: 12px;
-  font-size: 12px;
-}
-
-.node-handles {
-  position: absolute;
+  &:hover {
+    background-color: #1976D2;
+  }
 }
 </style>
