@@ -24,12 +24,8 @@
       <MiniMap v-if="showMinimap" />
 
       <Panel position="top-right" v-if="!isEditing">
-        <button class="control-button" @click="addNode">
-          Add Node
-        </button>
-        <button class="control-button" @click="deleteSelected">
-          Delete Selected
-        </button>
+        <button class="control-button" @click="addNode">Add Node</button>
+        <!-- <button class="control-button" @click="deleteSelected">Delete Selected</button> -->
       </Panel>
     </VueFlow>
   </div>
