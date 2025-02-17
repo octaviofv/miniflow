@@ -35,6 +35,17 @@ export default {
               headerColor: '#2196F3',
             },
           },
+          {
+            id: 'node-3',
+            type: 'custom',
+            position: { x: 100, y: 200 },
+            data: {
+              label: 'Test',
+              content: 'Otra cosa',
+              backgroundColor: '#ffffff',
+              headerColor: '#2196F3',
+            },
+          },          
         ],
         edges: [
           {
@@ -44,6 +55,13 @@ export default {
             type: 'smoothstep',
             animated: true,
           },
+          {
+            id: 'edge-2',
+            source: 'node-2',
+            target: 'node-3',
+            type: 'smoothstep',
+            animated: true,
+          },          
         ],
       }),
       /* wwEditor:start */
