@@ -48,6 +48,7 @@ export default {
     const handles = [
       //{ id: 'top', type: 'target', position: 'top' },
       //{ id: 'right', type: 'source', position: 'right' },
+      { id: 'top', type: 'source', position: 'top' },
       { id: 'bottom', type: 'source', position: 'bottom' },
       //{ id: 'left', type: 'target', position: 'left' },
     ];
