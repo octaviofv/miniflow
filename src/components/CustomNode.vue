@@ -46,10 +46,10 @@ export default {
   },
   setup() {
     const handles = [
-      { id: 'top', type: 'target', position: 'top' },
-      { id: 'right', type: 'source', position: 'right' },
+      //{ id: 'top', type: 'target', position: 'top' },
+      //{ id: 'right', type: 'source', position: 'right' },
       { id: 'bottom', type: 'source', position: 'bottom' },
-      { id: 'left', type: 'target', position: 'left' },
+      //{ id: 'left', type: 'target', position: 'left' },
     ];
 
     return {
