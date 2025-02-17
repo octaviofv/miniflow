@@ -1,28 +1,21 @@
 <template>
-<div 
-  class="circle-node" 
-  :class="[`node-type-${type}`, { selected }]"
-  :style="computedNodeStyle"
->
-  <div class="node-content">
-    <i v-if="icon" :class="icon" class="node-icon"></i>
-    <span class="node-label">{{ label }}</span>
+  <div
+    class="circle-node"
+    :class="[`node-type-${type}`, { selected }]"
+    :style="computedNodeStyle"
+  >
+    <!-- Label & Icon -->
+    <div class="node-content">
+      <i v-if="icon" :class="icon" class="node-icon"></i>
+      <span class="node-label">{{ label }}</span>
+    </div>
+
+    <!-- Connection Handles -->
+    <div class="node-handles">
+      <Handle v-if="type === 'event-start'" id="source-handle" type="source" position="right" />
+      <Handle v-if="type === 'event-end'" id="target-handle" type="target" position="left" />
+    </div>
   </div>
-  <div class="node-handles">
-    <Handle
-      v-if="type === 'event-start'"
-      id="right"
-      type="source"
-      position="right"
-    />
-    <Handle
-      v-if="type === 'event-end'"
-      id="left"
-      type="target"
-      position="left"
-    />
-  </div>
-</div>
 </template>
 
 <script>
@@ -32,40 +25,42 @@ import { Handle } from '@vue-flow/core';
 export default {
   name: 'CircleNode',
   components: {
-    Handle
+    Handle,
   },
   props: {
     type: {
       type: String,
       required: true,
-      validator: value => ['event-start', 'event-end'].includes(value)
+      validator: (value) => ['event-start', 'event-end'].includes(value),
     },
     label: {
       type: String,
-      default: ''
+      default: '',
     },
     icon: {
       type: String,
-      default: ''
+      default: '',
     },
     selected: {
       type: Boolean,
-      default: false
+      default: false,
     },
     backgroundColor: {
       type: String,
-      default: '#ffffff'
-    }
+      default: '#ffffff',
+    },
   },
   setup(props) {
+    // Dynamic node style based on backgroundColor
     const computedNodeStyle = computed(() => ({
-      backgroundColor: props.backgroundColor
+      backgroundColor: props.backgroundColor || '#ffffff',
+      borderColor: props.selected ? '#2196F3' : 'currentColor',
     }));
 
     return {
-      computedNodeStyle
+      computedNodeStyle,
     };
-  }
+  },
 };
 </script>
 
@@ -82,29 +77,29 @@ export default {
   transition: all 0.3s ease;
 
   &.selected {
-    border-color: #2196F3;
-    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+    border-color: #2196f3;
+    box-shadow: 0 0 8px rgba(33, 150, 243, 0.5);
   }
 
   &.node-type-event-start {
-    color: #4CAF50;
-    border-width: 2px;
+    color: #4caf50;
   }
 
   &.node-type-event-end {
     color: #f44336;
-    border-width: 2px;
   }
 
   .node-content {
     display: flex;
     flex-direction: column;
     align-items: center;
+    text-align: center;
     gap: 4px;
   }
 
   .node-icon {
-    font-size: 16px;
+    font-size: 18px;
+    margin: 0;
   }
 
   .node-label {
@@ -128,9 +123,10 @@ export default {
       pointer-events: all;
       width: 8px;
       height: 8px;
-      background: currentColor;
       border: 2px solid white;
-      transition: all 0.2s ease;
+      background: currentColor;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
 
       &:hover {
         transform: scale(1.2);
