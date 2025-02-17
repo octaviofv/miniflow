@@ -17,7 +17,7 @@
     >
       <!-- Custom nodes slot -->
       <template #node-custom="nodeProps">
-        <CircleNode 
+      <CircleNode
           v-if="['event-start', 'event-end'].includes(nodeProps?.data?.type)"
           :type="nodeProps?.data?.type"
           :label="nodeProps?.data?.label"
