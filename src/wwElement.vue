@@ -85,7 +85,6 @@ export default {
       /* wwEditor:start */
       return props.wwEditorState?.isEditing;
       /* wwEditor:end */
-      // eslint-disable-next-line no-unreachable
       return false;
     });
 
@@ -168,6 +167,7 @@ export default {
 
     const onNodeClick = (event, node) => {
       selectedNode.value = node;
+      console.log('Nodo seleccionado:', node); // Verifica que el nodo seleccionado se registre correctamente
       emit('trigger-event', { name: 'nodeSelected', event: { node } });
     };
 
@@ -192,9 +192,18 @@ export default {
 
     const deleteSelected = () => {
       if (selectedNode.value) {
-        removeNodes([selectedNode.value]);
+        console.log('Intentando eliminar nodo:', selectedNode.value.id);
+
+        // Eliminar el nodo seleccionado por su ID
+        removeNodes([selectedNode.value.id]);
+
+        console.log('Nodo eliminado con éxito.');
         selectedNode.value = null;
+
+        // Emitir el evento indicando que el nodo fue eliminado
         emit('trigger-event', { name: 'nodeDeleted' });
+      } else {
+        console.warn('No hay un nodo seleccionado para eliminar.');
       }
     };
 
