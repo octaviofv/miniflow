@@ -15,28 +15,21 @@
       @connect="onConnect"
       @paneClick="onPaneClick"
     >
-      <!-- Custom nodes slot -->
       <template #node-custom="nodeProps">
-      <CircleNode
-          v-if="['event-start', 'event-end'].includes(nodeProps?.data?.type)"
-          :type="nodeProps?.data?.type"
-          :label="nodeProps?.data?.label"
-          :icon="nodeProps?.data?.icon"
-          :selected="nodeProps?.selected"
-          :background-color="nodeProps?.data?.backgroundColor"
-        />
         <CustomNode v-bind="nodeProps" />
       </template>
 
-      <!-- Background and controls -->
       <Background :pattern-color="backgroundColor" :gap="backgroundGap" />
       <Controls />
       <MiniMap v-if="showMinimap" />
 
-      <!-- Panel for actions -->
       <Panel position="top-right" v-if="!isEditing">
-        <button class="control-button" @click="addNode">Add Node</button>
-        <button class="control-button" @click="deleteSelected">Delete Selected</button>
+        <button class="control-button" @click="addNode">
+          Add Node
+        </button>
+        <button class="control-button" @click="deleteSelected">
+          Delete Selected
+        </button>
       </Panel>
     </VueFlow>
   </div>
@@ -46,19 +39,17 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { 
   VueFlow, 
-  useVueFlow, 
+  useVueFlow,
   Background, 
   Controls, 
   MiniMap, 
   Panel 
 } from '@vue-flow/core';
-
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
 import '@vue-flow/controls/dist/style.css';
 import '@vue-flow/minimap/dist/style.css';
 import CustomNode from './components/CustomNode.vue';
-import CircleNode from './components/CircleNode.vue';
 
 export default {
   name: 'FlowChart',
@@ -69,7 +60,6 @@ export default {
     MiniMap,
     Panel,
     CustomNode,
-    CircleNode
   },
   props: {
     content: {
@@ -98,7 +88,7 @@ export default {
       return false;
     });
 
-    // VueFlow setup
+    // Initialize VueFlow
     const { findNode, addNodes, addEdges, removeNodes } = useVueFlow({
       defaultEdgeOptions: {
         type: 'smoothstep',
@@ -119,7 +109,7 @@ export default {
     const showMinimap = computed(() => props.content?.showMinimap ?? true);
     const backgroundColor = computed(() => props.content?.backgroundColor || '#f5f5f5');
 
-    // Initialize elements on mount
+    // Initialize flow data
     onMounted(() => {
       try {
         if (props.content?.flowData) {
@@ -132,16 +122,17 @@ export default {
             ...(parsedData.edges || [])
           ];
         }
+        initialized.value = true;
       } catch (error) {
         console.error('Error initializing flow data:', error);
-      } finally {
+        elements.value = [];
         initialized.value = true;
       }
     });
 
-    // Watch for updates in flowData
+    // Watch for flow data changes
     watch(() => props.content?.flowData, (newData) => {
-      if (newData) {
+      if (newData && initialized.value) {
         try {
           const parsedData = typeof newData === 'string' ? JSON.parse(newData) : newData;
           elements.value = [
@@ -166,6 +157,7 @@ export default {
           label: 'New Node',
           content: 'Node content',
           backgroundColor: '#ffffff',
+          headerColor: '#4CAF50',
         },
       };
 
@@ -175,19 +167,22 @@ export default {
 
     const onNodeClick = (event, node) => {
       selectedNode.value = node;
+      console.log('Nodo seleccionado:', node); // Verifica que el nodo seleccionado se registre correctamente
       emit('trigger-event', { name: 'nodeSelected', event: { node } });
     };
 
     const onConnect = (connection) => {
-      const newConnection = {
-        id: `edge-${connection.source}-${connection.target}`,
-        type: 'smoothstep',
-        animated: true,
-        ...connection,
-      };
-
-      addEdges([newConnection]);
-      emit('trigger-event', { name: 'connectionCreated', event: { connection: newConnection } });
+      if (connection?.source && connection?.target) {
+        const newEdge = {
+          id: `edge-${connection.source}-${connection.target}`,
+          ...connection,
+          type: 'smoothstep',
+          animated: true,
+        };
+        
+        addEdges([newEdge]);
+        emit('trigger-event', { name: 'connectionCreated', event: { connection: newEdge } });
+      }
     };
 
     const onPaneClick = () => {
@@ -197,11 +192,18 @@ export default {
 
     const deleteSelected = () => {
       if (selectedNode.value) {
+        console.log('Intentando eliminar nodo:', selectedNode.value.id);
+
+        // Eliminar el nodo seleccionado por su ID
         removeNodes([selectedNode.value.id]);
+
+        console.log('Nodo eliminado con éxito.');
         selectedNode.value = null;
+
+        // Emitir el evento indicando que el nodo fue eliminado
         emit('trigger-event', { name: 'nodeDeleted' });
       } else {
-        console.warn('No node selected to delete.');
+        console.warn('No hay un nodo seleccionado para eliminar.');
       }
     };
 
