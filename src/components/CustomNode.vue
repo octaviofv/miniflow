@@ -2,11 +2,10 @@
   <div 
     class="note-node" 
     :class="{ selected: selected }"
-    :style="{ backgroundColor: data.backgroundColor || '#fff9c4' }"
+    :style="{ backgroundColor: data.backgroundColor || '#ffffff' }"
   >
-    <div class="note-header" :style="{ backgroundColor: data.headerColor || '#f57f17' }">
+    <div class="note-header" :style="{ backgroundColor: data.headerColor || '#e0e0e0' }">
       <span class="note-title">{{ data.label || 'Note' }}</span>
-      <div class="note-fold"></div>
     </div>
     <div class="note-content">
       <textarea
@@ -91,77 +90,57 @@ export default {
 
 <style lang="scss" scoped>
 .note-node {
-  border-radius: 3px;
-  min-width: 200px;
-  min-height: 120px;
+  border: 1px solid #e0e0e0;
+  border-radius: 2px;
+  min-width: 180px;
+  min-height: 100px;
   position: relative;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
+  background-color: #ffffff;
   
   &.selected {
-    box-shadow: 0 0 0 2px #2196F3;
-  }
-
-  &:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    border-color: #2196F3;
   }
 }
 
 .note-header {
   padding: 8px 12px;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
-  color: white;
-  position: relative;
-  display: flex;
-  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+  color: #424242;
 }
 
 .note-title {
-  font-weight: 600;
-  font-size: 14px;
-  flex-grow: 1;
-}
-
-.note-fold {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 15px;
-  height: 15px;
-  background: linear-gradient(
-    135deg,
-    transparent 50%,
-    rgba(0, 0, 0, 0.2) 50%
-  );
-  border-top-right-radius: 3px;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.3px;
 }
 
 .note-content {
   padding: 12px;
-  min-height: 80px;
-  font-size: 14px;
+  min-height: 60px;
+  font-size: 13px;
   line-height: 1.4;
+  color: #616161;
 }
 
 .note-textarea {
   width: 100%;
-  min-height: 80px;
+  min-height: 60px;
   border: none;
   background: transparent;
   resize: none;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.4;
   padding: 0;
-  color: inherit;
+  color: #616161;
 
   &:focus {
     outline: none;
   }
 
   &::placeholder {
-    color: rgba(0, 0, 0, 0.3);
+    color: #9e9e9e;
   }
 }
 
@@ -180,14 +159,15 @@ export default {
 
   :deep(.vue-flow__handle) {
     pointer-events: all;
-    width: 8px;
-    height: 8px;
-    background: #f57f17;
-    border: 2px solid white;
+    width: 6px;
+    height: 6px;
+    background: #90a4ae;
+    border: 1px solid #ffffff;
     border-radius: 50%;
-    transition: transform 0.2s ease;
+    transition: all 0.2s ease;
 
     &:hover {
+      background: #607d8b;
       transform: scale(1.2);
     }
   }
