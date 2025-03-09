@@ -1,22 +1,15 @@
 <template>
   <div 
     class="note-node" 
-    :class="{ selected: selected }"
+    :class="{ selected }"
     :style="{ backgroundColor: data.backgroundColor || '#ffffff' }"
   >
-    <div class="note-header" :style="{ backgroundColor: data.headerColor || '#e0e0e0' }">
-      <span class="note-title">{{ data.label || 'Note' }}</span>
-    </div>
     <div class="note-content">
-      <textarea
-        v-if="!isReadOnly"
-        v-model="localContent"
-        class="note-textarea"
-        @blur="updateContent"
-        @keydown.stop
-        placeholder="Write your note here..."
-      ></textarea>
-      <div v-else class="note-text">{{ data.content || '' }}</div>
+      <div class="node-number">{{ data.number || '1' }}</div>
+      <div class="content-wrapper">
+        <div class="note-title">{{ data.label || 'Question' }}</div>
+        <div class="note-text">{{ data.content || '' }}</div>
+      </div>
     </div>
     <div class="node-handles">
       <Handle
@@ -90,61 +83,61 @@ export default {
 
 <style lang="scss" scoped>
 .note-node {
-  border: 1px solid #e0e0e0;
-  border-radius: 2px;
-  min-width: 180px;
-  min-height: 100px;
+  min-width: 280px;
   position: relative;
-  transition: all 0.2s ease;
   background-color: #ffffff;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  border: 2px solid #EAEAEA;
+  overflow: hidden;
   
   &.selected {
-    border-color: #2196F3;
+    border-color: #0445AF;
+    box-shadow: 0 4px 12px rgba(4, 69, 175, 0.1);
   }
-}
 
-.note-header {
-  padding: 8px 12px;
-  border-bottom: 1px solid #e0e0e0;
-  color: #424242;
-}
-
-.note-title {
-  font-weight: 500;
-  font-size: 13px;
-  letter-spacing: 0.3px;
+  &:hover {
+    border-color: #0445AF;
+  }
 }
 
 .note-content {
-  padding: 12px;
-  min-height: 60px;
-  font-size: 13px;
-  line-height: 1.4;
-  color: #616161;
+  display: flex;
+  align-items: flex-start;
+  padding: 20px;
+  gap: 16px;
 }
 
-.note-textarea {
-  width: 100%;
-  min-height: 60px;
-  border: none;
-  background: transparent;
-  resize: none;
-  font-family: inherit;
-  font-size: 13px;
+.node-number {
+  width: 32px;
+  height: 32px;
+  background-color: #0445AF;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.content-wrapper {
+  flex-grow: 1;
+}
+
+.note-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #262627;
+  margin-bottom: 8px;
   line-height: 1.4;
-  padding: 0;
-  color: #616161;
-
-  &:focus {
-    outline: none;
-  }
-
-  &::placeholder {
-    color: #9e9e9e;
-  }
 }
 
 .note-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #666666;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -159,16 +152,33 @@ export default {
 
   :deep(.vue-flow__handle) {
     pointer-events: all;
-    width: 6px;
-    height: 6px;
-    background: #90a4ae;
-    border: 1px solid #ffffff;
+    width: 12px;
+    height: 12px;
+    background: #0445AF;
+    border: 2px solid #ffffff;
     border-radius: 50%;
     transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(4, 69, 175, 0.2);
 
     &:hover {
-      background: #607d8b;
       transform: scale(1.2);
+      background: #0056D6;
+    }
+
+    &.vue-flow__handle-top {
+      top: -6px;
+    }
+
+    &.vue-flow__handle-right {
+      right: -6px;
+    }
+
+    &.vue-flow__handle-bottom {
+      bottom: -6px;
+    }
+
+    &.vue-flow__handle-left {
+      left: -6px;
     }
   }
 }
