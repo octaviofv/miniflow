@@ -94,7 +94,7 @@ export default {
 
     // Computed properties
     const containerStyle = computed(() => ({
-      height: props.content?.height || '100px',
+      height: props.content?.height || '600px',
       backgroundColor: props.content?.backgroundColor || '#f5f5f5',
     }));
 
