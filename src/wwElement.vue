@@ -14,6 +14,8 @@
       @nodeClick="onNodeClick"
       @connect="onConnect"
       @paneClick="onPaneClick"
+      @dragover="onDragOver"
+      @drop="onDrop"
     >
       <template #node-custom="nodeProps">
         <CustomNode v-bind="nodeProps" />
@@ -25,9 +27,9 @@
 
       <Panel position="top-right" v-if="!isEditing">
         <button class="control-button" @click="addNode">Add Node</button>
-        <!-- <button class="control-button" @click="deleteSelected">Delete Selected</button> -->
       </Panel>
     </VueFlow>
+    <Sidebar class="flowchart-sidebar" />
   </div>
 </template>
 
@@ -46,6 +48,7 @@ import '@vue-flow/core/dist/theme-default.css';
 import '@vue-flow/controls/dist/style.css';
 import '@vue-flow/minimap/dist/style.css';
 import CustomNode from './components/CustomNode.vue';
+import Sidebar from './components/Sidebar.vue';
 
 export default {
   name: 'FlowChart',
@@ -56,6 +59,7 @@ export default {
     MiniMap,
     Panel,
     CustomNode,
+    Sidebar,
   },
   props: {
     content: {
@@ -76,7 +80,6 @@ export default {
     const elements = ref([]);
     const selectedNode = ref(null);
 
-    // Editor state
     const isEditing = computed(() => {
       /* wwEditor:start */
       return props.wwEditorState?.isEditing;
@@ -84,15 +87,13 @@ export default {
       return false;
     });
 
-    // Initialize VueFlow
-    const { findNode, addNodes, addEdges, removeNodes } = useVueFlow({
+    const { findNode, addNodes, addEdges, removeNodes, project } = useVueFlow({
       defaultEdgeOptions: {
         type: 'smoothstep',
         animated: true,
       },
     });
 
-    // Computed properties
     const containerStyle = computed(() => ({
       height: props.content?.height || '600px',
       backgroundColor: props.content?.backgroundColor || '#f5f5f5',
@@ -105,7 +106,6 @@ export default {
     const showMinimap = computed(() => props.content?.showMinimap ?? true);
     const backgroundColor = computed(() => props.content?.backgroundColor || '#f5f5f5');
 
-    // Initialize flow data
     onMounted(() => {
       try {
         if (props.content?.flowData) {
@@ -126,7 +126,6 @@ export default {
       }
     });
 
-    // Watch for flow data changes
     watch(() => props.content?.flowData, (newData) => {
       if (newData && initialized.value) {
         try {
@@ -141,8 +140,26 @@ export default {
       }
     });
 
-    // Methods
     const generateId = () => `node_${Date.now()}`;
+
+    const onDragOver = (event) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    };
+
+    const onDrop = (event) => {
+      const data = JSON.parse(event.dataTransfer.getData('application/vueflow'));
+      const position = project({ x: event.clientX, y: event.clientY });
+
+      const newNode = {
+        id: generateId(),
+        ...data,
+        position,
+      };
+
+      addNodes([newNode]);
+      emit('trigger-event', { name: 'nodeAdded', event: { node: newNode } });
+    };
 
     const addNode = () => {
       const newNode = {
@@ -163,7 +180,6 @@ export default {
 
     const onNodeClick = (event, node) => {
       selectedNode.value = node;
-      console.log('Nodo seleccionado:', node); // Verifica que el nodo seleccionado se registre correctamente
       emit('trigger-event', { name: 'nodeSelected', event: { node } });
     };
 
@@ -188,18 +204,9 @@ export default {
 
     const deleteSelected = () => {
       if (selectedNode.value) {
-        console.log('Intentando eliminar nodo:', selectedNode.value.id);
-
-        // Eliminar el nodo seleccionado por su ID
         removeNodes([selectedNode.value.id]);
-
-        console.log('Nodo eliminado con éxito.');
         selectedNode.value = null;
-
-        // Emitir el evento indicando que el nodo fue eliminado
         emit('trigger-event', { name: 'nodeDeleted' });
-      } else {
-        console.warn('No hay un nodo seleccionado para eliminar.');
       }
     };
 
@@ -228,6 +235,8 @@ export default {
       onPaneClick,
       deleteSelected,
       updateNodeData,
+      onDragOver,
+      onDrop,
     };
   },
 };
@@ -240,9 +249,10 @@ export default {
   border: 1px solid #ddd;
   border-radius: 8px;
   overflow: hidden;
+  display: flex;
 
   :deep(.vue-flow) {
-    width: 100%;
+    flex-grow: 1;
     height: 100%;
   }
 
@@ -262,6 +272,10 @@ export default {
     stroke: #2196F3;
     stroke-width: 2;
   }
+}
+
+.flowchart-sidebar {
+  flex-shrink: 0;
 }
 
 .control-button {
