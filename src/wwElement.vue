@@ -21,14 +21,13 @@
         <template #node-custom="nodeProps">
           <CustomNode v-bind="nodeProps" />
         </template>
+        <template #node-circle="nodeProps">
+          <CircleNode v-bind="nodeProps" />
+        </template>
 
         <Background :pattern-color="backgroundColor" :gap="backgroundGap" />
         <Controls />
         <MiniMap v-if="showMinimap" />
-
-        <Panel position="top-right" v-if="!isEditing">
-          <button class="control-button" @click="addNode">Add Node</button>
-        </Panel>
       </VueFlow>
       <Sidebar class="flowchart-sidebar" />
     </div>
@@ -50,6 +49,7 @@ import '@vue-flow/core/dist/theme-default.css';
 import '@vue-flow/controls/dist/style.css';
 import '@vue-flow/minimap/dist/style.css';
 import CustomNode from './components/CustomNode.vue';
+import CircleNode from './components/CircleNode.vue';
 import Sidebar from './components/Sidebar.vue';
 
 export default {
@@ -61,6 +61,7 @@ export default {
     MiniMap,
     Panel,
     CustomNode,
+    CircleNode,
     Sidebar,
   },
   props: {
@@ -163,23 +164,6 @@ export default {
       emit('trigger-event', { name: 'nodeAdded', event: { node: newNode } });
     };
 
-    const addNode = () => {
-      const newNode = {
-        id: generateId(),
-        type: 'custom',
-        position: { x: 100, y: 100 },
-        data: {
-          label: 'New Node',
-          content: 'Node content',
-          backgroundColor: '#ffffff',
-          headerColor: '#4CAF50',
-        },
-      };
-
-      addNodes([newNode]);
-      emit('trigger-event', { name: 'nodeAdded', event: { node: newNode } });
-    };
-
     const onNodeClick = (event, node) => {
       selectedNode.value = node;
       emit('trigger-event', { name: 'nodeSelected', event: { node } });
@@ -231,7 +215,6 @@ export default {
       backgroundGap,
       showMinimap,
       backgroundColor,
-      addNode,
       onNodeClick,
       onConnect,
       onPaneClick,
@@ -288,20 +271,5 @@ export default {
   flex-shrink: 0;
   height: 100%;
   border-left: 1px solid #ddd;
-}
-
-.control-button {
-  margin: 4px;
-  padding: 8px 16px;
-  background-color: #2196F3;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-
-  &:hover {
-    background-color: #1976D2;
-  }
 }
 </style>
