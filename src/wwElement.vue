@@ -1,35 +1,37 @@
 <template>
   <div class="flowchart-container" :style="containerStyle">
-    <VueFlow
-      v-if="initialized"
-      v-model="elements"
-      :default-zoom="defaultZoom"
-      :min-zoom="minZoom"
-      :max-zoom="maxZoom"
-      :fit-view-on-init="true"
-      :nodes-draggable="!isEditing"
-      :nodes-connectable="!isEditing"
-      :elements-selectable="!isEditing"
-      class="flowchart"
-      @nodeClick="onNodeClick"
-      @connect="onConnect"
-      @paneClick="onPaneClick"
-      @dragover="onDragOver"
-      @drop="onDrop"
-    >
-      <template #node-custom="nodeProps">
-        <CustomNode v-bind="nodeProps" />
-      </template>
+    <div class="flowchart-wrapper">
+      <VueFlow
+        v-if="initialized"
+        v-model="elements"
+        :default-zoom="defaultZoom"
+        :min-zoom="minZoom"
+        :max-zoom="maxZoom"
+        :fit-view-on-init="true"
+        :nodes-draggable="!isEditing"
+        :nodes-connectable="!isEditing"
+        :elements-selectable="!isEditing"
+        class="flowchart"
+        @nodeClick="onNodeClick"
+        @connect="onConnect"
+        @paneClick="onPaneClick"
+        @dragover="onDragOver"
+        @drop="onDrop"
+      >
+        <template #node-custom="nodeProps">
+          <CustomNode v-bind="nodeProps" />
+        </template>
 
-      <Background :pattern-color="backgroundColor" :gap="backgroundGap" />
-      <Controls />
-      <MiniMap v-if="showMinimap" />
+        <Background :pattern-color="backgroundColor" :gap="backgroundGap" />
+        <Controls />
+        <MiniMap v-if="showMinimap" />
 
-      <Panel position="top-right" v-if="!isEditing">
-        <button class="control-button" @click="addNode">Add Node</button>
-      </Panel>
-    </VueFlow>
-    <Sidebar class="flowchart-sidebar" />
+        <Panel position="top-right" v-if="!isEditing">
+          <button class="control-button" @click="addNode">Add Node</button>
+        </Panel>
+      </VueFlow>
+      <Sidebar class="flowchart-sidebar" />
+    </div>
   </div>
 </template>
 
@@ -249,12 +251,20 @@ export default {
   border: 1px solid #ddd;
   border-radius: 8px;
   overflow: hidden;
-  display: flex;
+}
 
-  :deep(.vue-flow) {
-    flex-grow: 1;
-    height: 100%;
-  }
+.flowchart-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+}
+
+.flowchart {
+  flex-grow: 1;
+  height: 100%;
 
   :deep(.vue-flow__node) {
     width: auto;
@@ -276,6 +286,8 @@ export default {
 
 .flowchart-sidebar {
   flex-shrink: 0;
+  height: 100%;
+  border-left: 1px solid #ddd;
 }
 
 .control-button {
