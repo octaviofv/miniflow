@@ -180,6 +180,24 @@ export default {
         max: 100,
         step: 5,
       },
+      /* test */
+    width: {
+      label: { en: 'Width' },
+      type: 'Length',
+      section: 'settings',
+      bindable: true,
+      defaultValue: '100%',
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'string',
+        tooltip: 'The width of the flow chart container (e.g., "100%", "500px")',
+      },
+      propertyHelp: {
+        tooltip: 'Set the width of the flow chart container',
+      },
+      /* wwEditor:end */
+    },
+      /* fintest * /
       /* wwEditor:start */
       bindingValidation: {
         type: 'number',
